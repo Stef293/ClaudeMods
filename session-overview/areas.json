@@ -1,0 +1,18 @@
+{
+  "roots": ["D:\\Work", "D:\\Private"],
+  "areas": [
+    {
+      "name": "Work",
+      "paths": ["d:\\work"],
+      "color": "claude"
+    },
+    {
+      "name": "Private",
+      "paths": ["d:\\private"],
+      "titles": ["raspberry", "hobby"],
+      "color": "success"
+    }
+  ],
+  "fallbackArea": "Other",
+  "fallbackColor": "inactive"
+}

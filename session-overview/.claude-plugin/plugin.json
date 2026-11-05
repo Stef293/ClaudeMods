@@ -1,0 +1,6 @@
+{
+  "name": "session-overview",
+  "version": "0.1.0",
+  "description": "Pane mit allen Claude-Code-Sessions, gruppiert nach Bereich und Projekt, mit Suche und Zeitfilter",
+  "types": "./types/index.d.ts"
+}

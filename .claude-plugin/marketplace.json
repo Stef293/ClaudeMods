@@ -1,0 +1,11 @@
+{
+  "name": "my-mods",
+  "owner": { "name": "Stef293" },
+  "plugins": [
+    {
+      "name": "session-overview",
+      "source": "./session-overview",
+      "description": "Pane mit allen Claude-Code-Sessions, gruppiert nach Bereich und Projekt, mit Suche und Zeitfilter"
+    }
+  ]
+}
