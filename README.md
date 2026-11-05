@@ -8,8 +8,9 @@ A pane next to the chat that lists all Claude Code sessions, grouped by area and
 
 - Three levels: area, project, session. Areas and projects fold open and closed.
 - Search by title, project or area, and a time filter (all, today, 7 days, 30 days).
-- A "recently active" section and a colour dot per session that shows how fresh it is.
+- A "recently active" card with the five newest sessions, set apart from the project list by a labelled divider, and a colour dot per session that shows how fresh it is.
 - A click on a session opens it. The pane opens by itself at the start of every session; `/sessions` opens it again.
+- A "+ Neu" button on every project row starts a new Claude Code session in that project's folder (it uses the app's `claude://code/new?folder=...` link). Sessions without a folder have no button.
 - Each project shows its newest sessions first, the rest sits behind "+ n more".
 
 The mod reads the session files the desktop app keeps in `%LOCALAPPDATA%\Claude-Data\...\claude-code-sessions`. It changes nothing there.

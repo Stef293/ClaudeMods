@@ -60,9 +60,11 @@ test('an opened project lists its chats', async ($, on) => {
 
         expect(await ui.find({ type: 'Text', text: /Mein Test-Chat/ })).toBeTruthy()
         await ui.press({ key: 's:local_abc' })
+        await ui.press({ key: 'n:Work/projecta' })
         await ui.unmount()
     }
 
-    expect(started.length).toBe(2)
+    expect(started.length).toBe(4)
     expect(started[0]?.at(-1)).toBe('claude://claude.ai/epitaxy/local_abc')
+    expect(started[1]?.at(-1)).toBe('claude://code/new?folder=D%3A%5CWork%5Cprojecta')
 })

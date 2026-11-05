@@ -278,6 +278,42 @@ function freshnessColor(last: number, now: number): string {
     return age < DAY_MS ? 'suggestion' : 'inactive'
 }
 
+// The folder a new session in this project starts in: the project's own folder, not a subfolder of it.
+function projectFolderOf(cwd: string): string | undefined {
+    const normalized = cwd.replace(/\//g, '\\')
+    const lower = normalized.toLowerCase()
+
+    if (lower.includes('scratch-workspaces')) {
+        return undefined
+    }
+
+    for (const root of config.roots) {
+        const prefix = root.toLowerCase() + '\\'
+
+        if (lower.startsWith(prefix)) {
+            const first = normalized.slice(prefix.length).split('\\')[0]
+
+            return first ? normalized.slice(0, prefix.length) + first : undefined
+        }
+    }
+
+    return normalized
+}
+
+// claude://code/new?folder=... starts a new Claude Code session in that folder (the desktop app's own deep link).
+async function startSession($: EngineInterface, folder: string): Promise<void> {
+    try {
+        const url = `claude://code/new?folder=${encodeURIComponent(folder)}`
+        const result = await $.process.run(['rundll32.exe', 'url.dll,FileProtocolHandler', url])
+
+        if (result.exitCode !== 0) {
+            $.ui.toast(`Neue Session konnte nicht gestartet werden (Code ${result.exitCode})`)
+        }
+    } catch {
+        $.ui.toast('Neue Session konnte nicht gestartet werden')
+    }
+}
+
 function toggle(list: readonly string[], key: string): string[] {
     return list.includes(key) ? list.filter(item => item !== key) : [...list, key]
 }
@@ -435,11 +471,22 @@ export const register: Register = on => {
                     {rows.length > 0 && visible.length === 0 && <Text dimColor>Nichts gefunden.</Text>}
 
                     {recent.length > 0 && (
-                        <Box flexDirection="column">
+                        <Box flexDirection="column" borderStyle="round" borderDimColor paddingX={1}>
                             <Text dimColor bold>
                                 ZULETZT AKTIV
                             </Text>
                             {recent.map(row => renderSession(row, false, true))}
+                        </Box>
+                    )}
+
+                    {recent.length > 0 && (
+                        <Box>
+                            <Box flexShrink={0}>
+                                <Text dimColor>{'── PROJEKTE '}</Text>
+                            </Box>
+                            <Box flexGrow={1} flexShrink={1} minWidth={0} overflow="hidden" height={1}>
+                                <Text dimColor>{'─'.repeat(200)}</Text>
+                            </Box>
                         </Box>
                     )}
 
@@ -474,6 +521,7 @@ export const register: Register = on => {
                                         const projectKey = `${area}/${project}`
                                         const isProjectOpen = isSearching || !closedByUser.includes(projectKey)
                                         const isExpanded = expandedList.includes(projectKey)
+const projectFolder = projectFolderOf(list[0]?.cwd ?? '')
                                         const shownRows = isExpanded ? list : list.slice(0, PROJECT_LIMIT)
                                         const hiddenCount = list.length - shownRows.length
 
@@ -484,20 +532,29 @@ export const register: Register = on => {
                                             marginLeft={2}
                                             marginTop="sm"
                                         >
-                                                <Button
-                                                    key={`p:${projectKey}`}
-                                                    plain
-                                                    onPress={() =>
-                                                        update($, closedProjects, current => toggle(current, projectKey))
-                                                    }
-                                                >
-                                                    <Text dimColor>{isProjectOpen ? '▾' : '▸'} </Text>
-                                                    <Text bold>{project}</Text>
-                                                    <Text dimColor>
-                                                        {'  '}
-                                                        {list.length} · {formatAge(list[0]?.last ?? 0, now)}
-                                                    </Text>
-                                                </Button>
+                                                <Box justifyContent="space-between">
+                                                    <Button
+                                                        key={`p:${projectKey}`}
+                                                        plain
+                                                        onPress={() =>
+                                                            update($, closedProjects, current => toggle(current, projectKey))
+                                                        }
+                                                    >
+                                                        <Text dimColor>{isProjectOpen ? '▾' : '▸'} </Text>
+                                                        <Text bold>{project}</Text>
+                                                        <Text dimColor>
+                                                            {'  '}
+                                                            {list.length} · {formatAge(list[0]?.last ?? 0, now)}
+                                                        </Text>
+                                                    </Button>
+                                                    {projectFolder && (
+                                                        <Box borderStyle="round" borderColor={accent} paddingX={1}>
+                                                            <Button key={`n:${projectKey}`} plain onPress={() => startSession($, projectFolder)}>
+                                                                <Text bold>+ Neu</Text>
+                                                            </Button>
+                                                        </Box>
+                                                    )}
+                                                </Box>
 
                                                 {isProjectOpen && shownRows.map(row => renderSession(row, true, false))}
                                             {isProjectOpen && list.length > PROJECT_LIMIT && (
